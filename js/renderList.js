@@ -6,7 +6,7 @@ const createCard = (product) => {
   li.classList.add('catalog__item');
 
   li.innerHTML = `
-    <article class="product">
+    <article class="product" data-id-product="${product.id}">
       <img class="product__image" src="${API_URL}/${product.image}" alt="${product.title}">
 
       <p class="product__price">${product.price}<span class="currency">₽</span></p>
@@ -24,9 +24,9 @@ const createCard = (product) => {
   return li;
 };
 
-const renderList = async () => {
+const renderList = async (category = 'burger') => {
   catalogList.textContent = '';
-  const dataProductList = await getData(`${API_URL}${PREFIX_PRODUCT}`);
+  const dataProductList = await getData(`${API_URL}${PREFIX_PRODUCT}?category=${category}`);
   const listProducts = dataProductList.map(createCard);
 
   catalogList.append(...listProducts);

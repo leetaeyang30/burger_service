@@ -82,6 +82,7 @@ fieldset {
   cursor: pointer;
   overflow-y: auto;
   display: none;
+  z-index: 15;
 }
 
 .modal_open {
@@ -150,7 +151,7 @@ fieldset {
     top: 16px;
     right: 16px;
   }
-  
+
 }
 
 @media (min-width: 768px) {
@@ -175,10 +176,10 @@ fieldset {
     top: 24px;
     right: 24px;
   }
-} 
+}
 
 @media (min-width: 1360px) {
   .container {
     --container: 1290px;
   }
-} 
+}

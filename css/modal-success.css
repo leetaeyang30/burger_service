@@ -1,0 +1,25 @@
+.modal__success {
+  padding: 20px 16px 29px;
+};
+
+.modal-success__container {
+  max-width: 300px;
+  height: 100%;
+}
+
+.modal-success__title {
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 100%;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.modal-success__text {
+  margin: 0;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 100%;
+  text-align: center;
+}
+

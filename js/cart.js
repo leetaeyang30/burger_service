@@ -1,105 +1,104 @@
-import { API_URL, PREFIX_PRODUCT } from "./api.js";
-import { modalProductBtn } from "./modal-product.js";
-import { catalogList, getData } from "./utils.js";
+import { cartController, getCart, renderCartList} from './order-cards.js';
 
-const countAmount = document.querySelector('.modal-product .count__amount');
-const orderCountTotal = document.querySelector('.order__count');
+const order = document.querySelector('.order');
 const orderList = document.querySelector('.order__list');
-const oderTotalAmount = document.querySelector('.order__total-amount');
+const orderTitle = document.querySelector('.order__wrap-title');
+const orderSubmit = document.querySelector('.order__submit');
+const delivery = document.querySelector('.modal_delivery');
+const deliveryForm = document.querySelector('.modal-delivery__form');
+const body = document.querySelector('body');
 
-const getCart = () => {
-  const cartList = localStorage.getItem('cart');
-  if (cartList) {
-    return JSON.parse(cartList);
-  } else {
-    return [];
+const closeDelivery = (evt) => {
+  if(evt.target.closest('.modal__close') || delivery === evt.target) {
+    delivery.classList.remove('modal_open');
   }
 };
 
-const renderCartList = async () => {
-  const cartList = getCart();
-  const allIdsOrder = cartList.map(item => item.id);
-  const data = await getData(`${API_URL}${PREFIX_PRODUCT}?list=${allIdsOrder}`);
-
-  const countProduct = cartList.reduce((acc, item)=> acc + item.count, 0);
-  orderCountTotal.textContent = countProduct;
-
-  orderList.textContent = '';
-  const orderItems = data.map((item) => {
-    const li = document.createElement('li');
-    li.classList.add('order__item');
-    li.dataset.idProduct = item.id;
-    const product = cartList.find(orderItem => orderItem.id === item.id);
-
-    li.innerHTML = `
-    <img src="${API_URL}/${item.image}" alt="${item.title}" class="order__image">
-    <div class="order__product">
-      <h3 class="order__product-title">${item.title}</h3>
-      <p class="order__product-weight">${item.weight}г</p>
-      <p class="order__product-price">${item.price}₽</p>
-    </div>
-
-    <div class="order__product-count count">
-      <button class="count__minus">-</button>
-      <p class="count__amount">${product.count}</p>
-      <button class="count__plus">+</button>
-    </div>
-    `;
-
-    return li;
+const cartModify = () => {
+  orderTitle.addEventListener('click', () => {
+    order.classList.toggle('order_open')
   });
 
-  orderList.append(...orderItems);
+  orderSubmit.addEventListener('click', () => {
+    delivery.classList.add('modal_open');
+  });
 
-  const countTotalPrice = data.reduce((acc, item) => {
-    const product = cartList.find((orderItem) => {
-      return orderItem.id === item.id
-    });
+  delivery.addEventListener('click', closeDelivery);
+}
 
-    return acc + item.price*product.count;
-    }, 0);
-
-    oderTotalAmount.textContent = countTotalPrice;
-};
-
-const updateCart = (list) => {
-  localStorage.setItem('cart', JSON.stringify(list));
+const resetCart = () => {
+  localStorage.removeItem('cart');
   renderCartList();
 };
 
-const addOrder = (id, count = 1) => {
-  const cartList = getCart();
-  const product = cartList.find((item) => item.id === id);
+const success = (id) => {
+  const modal = document.createElement('div');
+    modal.classList.add('modal', 'modal-success');
 
-  if (product) {
-    product.count += count;
-  } else {
-    cartList.push({id,count})
-  }
+    modal.innerHTML = `
+    <div class="modal__main modal__success">
+      <div class="modal-success__container">
+        <h2 class="modal-success__title">Еда уже в пути!</h2>
+        <p class="modal-success__text">Ваш номер заказа ${id}</p>
 
-  updateCart(cartList);
+        <button class="modal__close">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <rect x="5.07422" y="5.28247" width="1" height="20" transform="rotate(-45 5.07422 5.28247)" />
+            <rect x="5.78125" y="19.4246" width="1" height="20" transform="rotate(-135 5.78125 19.4246)" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    `;
+
+  return modal;
 };
 
-const removeOrder = (id) => {};
+const orderController = () => {
+  deliveryForm.addEventListener('change', () => {
+    if(deliveryForm.format.value === 'pickup') {
+      deliveryForm['address-info'].classList.add('modal-delivery__fieldset-input--hidden');
+    }
 
-const cartController = () => {
-  catalogList.addEventListener('click', ({target}) => {
-    if(target.closest('.product__add')) {
-      addOrder(target.closest('.product').dataset.idProduct);
+    if(deliveryForm.format.value === 'delivery') {
+      deliveryForm['address-info'].classList.remove('modal-delivery__fieldset-input--hidden');
     }
   });
 
-  modalProductBtn.addEventListener('click', () => {
-    addOrder(
-      modalProductBtn.dataset.idProduct,
-      parseInt(countAmount.textContent)
-    );
+  deliveryForm.addEventListener('submit', (evt) => {
+    evt.preventDefault();
+    const formData = new FormData(deliveryForm);
+    const data = Object.fromEntries(formData);
+    data.order = getCart();
+
+    fetch('https://reqres.in/api/users', {
+      method: 'post',
+      body: JSON.stringify(data),
+    }).then (response => response.json())
+    .then((data) => {
+      let successNotification = success(data.id);
+      body.append(successNotification);
+      successNotification.classList.add('modal_open');
+      const closeNotification = () => {
+        const button = successNotification.querySelector('.modal__close');
+        button.addEventListener('click', () => {
+          successNotification.classList.remove('modal_open');
+        })
+      };
+      closeNotification();
+    });
+
+    resetCart();
+    delivery.removeEventListener('click', closeDelivery);
+    delivery.classList.remove('modal_open');
+    order.classList.toggle('order_open');
   });
-};
+}
 
 const cartInit = () => {
+  orderController();
   cartController();
   renderCartList();
 };
 
-export { cartInit }
+export {cartModify, orderSubmit, cartInit }

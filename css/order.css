@@ -12,6 +12,7 @@
   background: #FFFFFF;
   border-radius: 12px;
   padding: 16px 10px;
+  z-index: 10;
 }
 
 .order__wrap-title {
@@ -19,6 +20,17 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
+}
+
+
+@media (max-width: 1024px) {
+  .order__wrap-title {
+    cursor: pointer;
+  }
+
+  .order__wrap-title:hover .order__title{
+    color: #FFAB08;
+  }
 }
 
 .order__title {
@@ -123,6 +135,7 @@
 .order__submit:disabled {
   background-color: #F9F9F9;
   color: #ACACAC;
+  cursor: not-allowed;
 }
 
 .order__appeal {
